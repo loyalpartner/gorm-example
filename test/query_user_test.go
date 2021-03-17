@@ -1,11 +1,13 @@
 package test
 
 import (
-	"fmt"
 	"testing"
+	"time"
 
 	"github.com/loyalpartner/gorm-example/database"
 	"github.com/loyalpartner/gorm-example/model"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 //
@@ -118,6 +120,154 @@ func TestQueryFindAll(t *testing.T) {
 }
 
 //
+// 条件
+//
+func TestQueryWhere(t *testing.T) {
+
+	user := new(model.User)
+	users := new([]model.User)
+	// 获取第一条匹配的记录
+	if err := database.DB.Where("id = ?", 1).First(user).Error; err != nil {
+		t.Errorf("id = %v not found", 1)
+	}
+
+	// 获取全部记录
+	if err := database.DB.Where("id <> ?", 1).Find(users).Error; err != nil {
+		t.Errorf("search all error")
+	}
+
+	// in
+	if err := database.DB.Where("id in ?", []int{1, 2, 3}).Find(users).Error; err != nil {
+		t.Errorf("search in [1,2,3] error")
+	}
+
+	// like
+	if err := database.DB.Where("name like ?", "%a%").Find(users).Error; err != nil {
+		t.Errorf("like query error")
+	}
+
+	// and
+	if err := database.DB.Where("id = ? and birthday is not null", 1).Find(users).Error; err != nil {
+		t.Errorf("like query error")
+	}
+
+	// time
+	if err := database.DB.Where("updated_at < ?", time.Now()).Find(users).Error; err != nil {
+		t.Errorf("time query")
+	}
+
+	// between
+	if err := database.DB.Where("id between 1 and 10").Find(users).Error; err != nil {
+		t.Errorf("between query")
+	}
+
+	// struct & Map
+	// 注意 当使用结构作为条件查询时，GORM 只会查询非零值字段。
+	// 这意味着如果您的字段值为 0、''、false 或其他 零值，该字段不会被用于构建查询条件
+	if err := database.DB.Where(&model.User{
+		Model: gorm.Model{
+			ID: 1,
+		},
+	}).First(user).Error; err != nil {
+		t.Errorf("struct query")
+	}
+
+	if err := database.DB.Where(map[string]interface{}{"id": 1}).Find(users).Error; err != nil {
+		t.Errorf("map query error")
+	}
+
+	if err := database.DB.Where([]int64{20, 21, 22}).Find(users).Error; err != nil {
+		t.Errorf("slice query error")
+	}
+
+}
+
+//
+// 内联条件
+//
+func TestInlineCondition(t *testing.T) {
+	user := new(model.User)
+	users := new([]model.User)
+
+	if err := database.DB.First(user, "name like ?", "%a%").Error; err != nil {
+		t.Errorf("inline first error")
+	}
+
+	if err := database.DB.Find(users, "name like ?", "%a%").Error; err != nil {
+		t.Errorf("inline find error")
+	}
+
+	if err := database.DB.Find(users, "id <> 1 and birthday is not null").Error; err != nil {
+		t.Errorf("inline find error")
+	}
+
+	if err := database.DB.Find(users, model.User{Model: gorm.Model{ID: 1}}).Error; err != nil {
+		t.Errorf("inline find with struct")
+	}
+
+	if err := database.DB.Find(users, map[string]interface{}{"id": 1}).Error; err != nil {
+		t.Errorf("inline find with map")
+	}
+
+}
+
+//
+// 指定结构查询
+//
+func TestSpecifyStruct(t *testing.T) {
+	users := new([]model.User)
+	if err := database.DB.Where(&model.User{Model: gorm.Model{ID: 1}, Name: ""}, "name").Find(users).Error; err != nil {
+		t.Errorf("specify struct query error")
+	}
+
+	if err := database.DB.Where(&model.User{Age: byte(0)}, "age").Find(users).Error; err != nil {
+		t.Errorf("specify struct query error")
+	}
+}
+
+//
+// Or 条件
+//
+func TestNotCondition(t *testing.T) {
+	// user := new(model.User)
+	users := new([]model.User)
+	if err := database.DB.Not("id = ?", 2).Find(users).Error; err != nil {
+		t.Errorf("not condition error ")
+	}
+
+	if err := database.DB.Not([]interface{}{1, 2, 3}).Find(users).Error; err != nil {
+		t.Errorf("not in condition")
+	}
+
+	if err := database.DB.Not(model.User{Model: gorm.Model{ID: 2}}).Find(users).Error; err != nil {
+		t.Errorf("not condition with struct")
+	}
+
+	if err := database.DB.Not(map[string]interface{}{"id": 2}).Find(users).Error; err != nil {
+		t.Errorf("not condition with struct")
+	}
+}
+
+//
+// Or 条件
+//
+func TestOrCondition(t *testing.T) {
+	// user := new(model.User)
+	users := new([]model.User)
+	if err := database.DB.Where("id = ?", 1).Or("id = ?", 2).Find(users).Error; err != nil {
+		t.Errorf("where or error ")
+	}
+
+	if err := database.DB.Where("id = ?", 1).Or(model.User{Model: gorm.Model{ID: 2}}).Find(users).Error; err != nil {
+		t.Errorf("whero or with struct")
+	}
+
+	if err := database.DB.Where("id = ?", 1).Or(map[string]interface{}{"id": 2}).Find(users).Error; err != nil {
+		t.Errorf("whero or with struct")
+	}
+}
+
+//
 // 预先加载
 //
 func TestQueryPreload(t *testing.T) {
@@ -152,17 +302,40 @@ func TestQueryScan(t *testing.T) {
 	t.Logf("the first name is %v", user.Name)
 }
 
-func a(b []string) []string{
-	fmt.Printf("a() address %p\n", b)
-	return b
-	// fmt.Printf("a() address %p", b)
+//
+// 选择特定字段
+//
+func TestSpecificFields(t *testing.T) {
+	users := new(model.User)
+	if err := database.DB.Select("name", "age").Find(users).Error; err != nil {
+		t.Errorf("specific fields error")
+	}
+
+	err := database.DB.Select([]string{"name", "age"}).Find(users).Error
+	if err != nil {
+		t.Errorf("specific fields with slice")
+	}
 }
 
-func TestTTT(t *testing.T) {
-	c := []string{}
+//
+// Order 排序
+//
+func TestOrderSort(t *testing.T) {
+	users := new([]model.User)
+	result := database.DB.Order("created_at").Find(users)
+	if result.Error != nil {
+		t.Errorf("order query failed")
+	}
 
-	fmt.Printf("b() address %p\n", c)
-	e := a(c)
-    
-	fmt.Printf("e() address %p\n", e)
+	err := database.DB.Order("age desc, created_at asc").Find(users).Error
+	if err != nil {
+		t.Errorf("order query failed")
+	}
+
+	database.DB.Clauses(clause.OrderBy{
+		Expression: clause.Expr{SQL: "FIELD(id,?)", Vars: []interface{}{[]int{1, 2, 3}}, WithoutParentheses: true},
+	}).Find(users)
+
+	t.Logf("%v", len(*users))
+
 }

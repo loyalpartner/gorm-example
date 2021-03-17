@@ -10,7 +10,7 @@ import (
 type User struct {
 	gorm.Model
 	Name         string
-	Age          *byte `gorm:"default:10"`
+	Age          byte `gorm:"default:10"`
 	Email        *string
 	Birthday     *time.Time
 	MemberNumber sql.NullString
