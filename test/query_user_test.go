@@ -226,7 +226,7 @@ func TestSpecifyStruct(t *testing.T) {
 }
 
 //
-// Or 条件
+// Not 条件
 //
 func TestNotCondition(t *testing.T) {
 	// user := new(model.User)
@@ -266,27 +266,6 @@ func TestOrCondition(t *testing.T) {
 		t.Errorf("whero or with struct")
 	}
 }
-
-//
-// 预先加载
-//
-func TestQueryPreload(t *testing.T) {
-	users := []model.User{}
-
-	result := database.DB.Joins("left join credit_cards on users.id = credit_cards.user_id").
-		Where("credit_cards.user_id is not null").
-		Find(&users)
-
-	if result.Error != nil {
-		t.Fatalf("preload failed: %v", result)
-	}
-
-	t.Logf("preload user count is %v", len(users))
-}
-
-///
-/// Scan
-///
 
 // TestQueryScan 测试嵌套数据scan
 func TestQueryScan(t *testing.T) {
@@ -339,3 +318,74 @@ func TestOrderSort(t *testing.T) {
 	t.Logf("%v", len(*users))
 
 }
+
+//
+// Limit & Offset
+//
+func TestLimitAndOffset(t *testing.T) {
+	users := []model.User{}
+	// creditCards := []model.CreditCard{}
+	err := database.DB.Limit(3).Find(&users).Error
+	if err != nil {
+		t.Errorf("limit query failed")
+	}
+
+	// 通过-1 消除limit条件
+	t.Logf("-1 消除 limit 条件 enable")
+	err = database.DB.
+		Limit(3).
+		Find(&users).
+		Limit(-1).Find(nil).Error
+	if err != nil {
+		t.Errorf("limit offset query failed")
+	}
+	t.Logf("-1 消除 limit 条件")
+
+	err = database.DB.Limit(3).Offset(100).Find(&users).Error
+	if err != nil {
+		t.Errorf("limit offset query failed")
+	}
+
+	// err = database.DB.Offset(5).Find(&users).Error
+	// if err != nil {
+	// 	t.Logf("offset query failed")
+	// }
+}
+
+//
+// Group & Having
+//
+// TODO
+
+//
+// Distinct
+//
+// TODO
+
+//
+// Joins
+//
+// TODO
+
+//
+// Join 预先加载
+//
+// TODO
+func TestQueryPreload(t *testing.T) {
+	users := []model.User{}
+
+	result := database.DB.Joins("left join credit_cards on users.id = credit_cards.user_id").
+		Where("credit_cards.user_id is not null").
+		Find(&users)
+
+	if result.Error != nil {
+		t.Fatalf("preload failed: %v", result)
+	}
+
+	t.Logf("preload user count is %v", len(users))
+}
+
+//
+// Scan
+//
+// TODO

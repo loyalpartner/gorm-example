@@ -15,4 +15,6 @@ type User struct {
 	Birthday     *time.Time
 	MemberNumber sql.NullString
 	CreditCard   CreditCard
+	CompanyID    int
+	Company      Company `gorm:"foreignKey:CompanyID"`
 }

@@ -25,4 +25,6 @@ test_specific_fields:
 	go test -v -run TestSpecificFields ./test/query_user_test.go
 test_order_sort:
 	go test -v -run TestOrderSort ./test/query_user_test.go
+test_limit_and_offset:
+	go test -v -run TestLimitAndOffset ./test/query_user_test.go
 # end
