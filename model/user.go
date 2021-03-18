@@ -2,12 +2,7 @@ package model
 
 import (
 	"database/sql"
-	"strings"
 	"time"
-
-	"gorm.io/gorm"
-
-	"github.com/google/uuid"
 )
 
 type User struct {
@@ -23,7 +18,3 @@ type User struct {
 	Roles        []Role     `gorm:"many2many:user_roles"`
 }
 
-func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
-	u.ID = strings.ReplaceAll(uuid.NewString(), "-", "")
-	return nil
-}

@@ -12,7 +12,7 @@ test_add_user:
 test_add_user_company:
 	go test -v -run TestAddUserWithCompany ./test/add_user_test.go
 test_query_user:
-	go test -v ./test/query_user_test.go
+	go test -v -run TestQueryFirst ./test/query_user_test.go
 test_query_where_condition:
 	go test -v -run TestQueryWhere ./test/query_user_test.go
 test_query_inline_condition:
