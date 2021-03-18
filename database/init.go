@@ -17,6 +17,7 @@ func init() {
 		DSN: dsn,
 	}), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
+		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 
 	if err != nil {
@@ -26,7 +27,7 @@ func init() {
 	}
 
 	DB = db
-	db.Logger.LogMode(logger.Info)
+	// db.Logger.LogMode(logger.Info)
 
 	sqldb, _ := db.DB()
 	sqldb.SetMaxIdleConns(10)

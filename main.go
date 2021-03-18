@@ -25,5 +25,5 @@ func main() {
 	db.AutoMigrate(&model.Blog{})
 	db.AutoMigrate(&model.CreditCard{})
 	db.AutoMigrate(&model.Company{})
-	
+	db.AutoMigrate(&model.Role{})
 }

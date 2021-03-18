@@ -370,7 +370,7 @@ func TestLimitAndOffset(t *testing.T) {
 //
 // Join 预先加载
 //
-// TODO
+//
 func TestQueryPreload(t *testing.T) {
 	users := []model.User{}
 
@@ -382,7 +382,27 @@ func TestQueryPreload(t *testing.T) {
 		t.Fatalf("preload failed: %v", result)
 	}
 
-	t.Logf("preload user count is %v", len(users))
+	for _, user := range users {
+		t.Logf("user %v's credit card is: %v", user.Name, user.CreditCard.Number)
+	}
+}
+
+//
+// Association
+//
+func TestQueryAssociation(t *testing.T) {
+	// companies := []model.Company{}
+	company := model.Company{
+		Model: gorm.Model{ID: 1},
+	}
+	users := []model.User{}
+
+	database.DB.Model(&company).Association("Users").Find(&users)
+
+	for _, user := range users {
+		t.Logf("id:%v", user.ID)
+		t.Logf("name:%v", user.Name)
+	}
 }
 
 //
