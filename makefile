@@ -39,4 +39,8 @@ test_query_polymorphic:
 
 test_query_many_2_many:
 	go test -v -run TestQueryMany2Many ./test/many_to_many_test.go
+test_user:
+	go test -v ./model/user_test.go
+test_company:
+	go test -v ./model/company_test.go
 # end

@@ -9,12 +9,11 @@ type User struct {
 	Model
 	Name         string
 	Age          byte `gorm:"default:10"`
-	Email        *string
+	Email        string
 	Birthday     *time.Time
 	MemberNumber sql.NullString
 	CreditCard   CreditCard `gorm:"foreignKey:UserID;references:ID"`
-	CompanyID    int        `gorm:"default:null"`
-	Company      Company    `gorm:"foreignKey:CompanyID"`
+	CompanyID    string     `gorm:"default:null"`
+	Company      Company    `gorm:"references:ID"`
 	Roles        []Role     `gorm:"many2many:user_roles"`
 }
-
